@@ -1,5 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.tsx", "public/script*.js"],
+  "exclude": ["vite-src", "convex-copy"],
   "compilerOptions": {
     "target": "ES2022",
     "jsx": "react-jsx",
@@ -22,6 +23,7 @@
     "noUncheckedSideEffectImports": true,
     "baseUrl": ".",
     "paths": {
+      "@/*": ["./src/*"],
       "~/*": ["./src/*"]
     },
 

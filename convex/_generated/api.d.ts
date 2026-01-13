@@ -8,7 +8,14 @@
  * @module
  */
 
+import type * as apiKeys from "../apiKeys.js";
+import type * as chats from "../chats.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as lib_encryption from "../lib/encryption.js";
+import type * as messages from "../messages.js";
 import type * as myFunctions from "../myFunctions.js";
+import type * as preferences from "../preferences.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +24,14 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  apiKeys: typeof apiKeys;
+  chats: typeof chats;
+  "lib/auth": typeof lib_auth;
+  "lib/encryption": typeof lib_encryption;
+  messages: typeof messages;
   myFunctions: typeof myFunctions;
+  preferences: typeof preferences;
+  users: typeof users;
 }>;
 
 /**
