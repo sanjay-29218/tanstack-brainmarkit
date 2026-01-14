@@ -15,6 +15,7 @@ import type * as lib_encryption from "../lib/encryption.js";
 import type * as messages from "../messages.js";
 import type * as myFunctions from "../myFunctions.js";
 import type * as preferences from "../preferences.js";
+import type * as uploads from "../uploads.js";
 import type * as users from "../users.js";
 
 import type {
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   messages: typeof messages;
   myFunctions: typeof myFunctions;
   preferences: typeof preferences;
+  uploads: typeof uploads;
   users: typeof users;
 }>;
 

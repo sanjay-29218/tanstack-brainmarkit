@@ -16,4 +16,3 @@ export async function requireUserId(ctx: AuthContext): Promise<string> {
   }
   return userId
 }
-

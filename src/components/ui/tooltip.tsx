@@ -59,3 +59,35 @@ function TooltipContent({
 }
 
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+
+type TooltipTextProps = {
+  text: React.ReactNode
+  children: React.ReactElement
+  disabled?: boolean
+  side?: React.ComponentProps<typeof TooltipPrimitive.Content>["side"]
+  sideOffset?: number
+}
+
+/**
+ * Convenience wrapper for the common "text tooltip around a child" use-case.
+ * Keeps the existing Radix exports intact.
+ */
+export function TooltipText({
+  text,
+  children,
+  disabled,
+  side,
+  sideOffset = 6,
+}: TooltipTextProps) {
+  if (disabled) return children
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent side={side} sideOffset={sideOffset}>
+          {text}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+}

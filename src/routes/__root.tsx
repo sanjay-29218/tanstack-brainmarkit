@@ -7,6 +7,11 @@ import {
 import * as React from 'react'
 import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
+import { SidebarProvider } from '@/components/ui/sidebar'
+import { ChatProvider } from '@/providers/ChatProvider'
+import AppLayout from '@/App'
+import { Toaster } from '@/components/ui/sonner'
+import { AuthSync } from '@/components/AuthSync'
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
@@ -21,7 +26,7 @@ export const Route = createRootRouteWithContext<{
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'TanStack Start Starter',
+        title: 'Brainmark',
       },
     ],
     links: [
@@ -54,7 +59,15 @@ export const Route = createRootRouteWithContext<{
 function RootComponent() {
   return (
     <RootDocument>
-      <Outlet />
+      <Toaster richColors closeButton position="top-center" />
+      <AuthSync />
+      <SidebarProvider>
+        <ChatProvider>
+          <AppLayout>
+            <Outlet />
+          </AppLayout>
+        </ChatProvider>
+      </SidebarProvider>
     </RootDocument>
   )
 }

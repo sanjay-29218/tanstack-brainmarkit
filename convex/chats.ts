@@ -12,6 +12,8 @@ export const listWithMessages = query({
     page: v.array(v.any()),
     isDone: v.boolean(),
     continueCursor: v.union(v.string(), v.null()),
+    splitCursor: v.union(v.string(), v.null()),
+    pageStatus: v.union(v.any(), v.null()),
   }),
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx)
@@ -188,4 +190,3 @@ export const deleteChat = mutation({
     return { id: args.threadId }
   },
 })
-
