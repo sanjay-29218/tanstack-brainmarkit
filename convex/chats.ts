@@ -13,7 +13,11 @@ export const listWithMessages = query({
     isDone: v.boolean(),
     continueCursor: v.union(v.string(), v.null()),
     splitCursor: v.union(v.string(), v.null()),
-    pageStatus: v.union(v.any(), v.null()),
+    pageStatus: v.union(
+      v.literal('SplitRecommended'),
+      v.literal('SplitRequired'),
+      v.null(),
+    ),
   }),
   handler: async (ctx, args) => {
     const userId = await getUserId(ctx)
@@ -22,7 +26,13 @@ export const listWithMessages = query({
         .query('threads')
         .withIndex('by_appId', (q) => q.eq('id', '__no_threads__'))
         .paginate(args.paginationOpts)
-      return { ...emptyPage, page: [] as Array<any> }
+      return {
+        page: [] as Array<any>,
+        isDone: emptyPage.isDone,
+        continueCursor: emptyPage.continueCursor,
+        splitCursor: emptyPage.splitCursor ?? null,
+        pageStatus: emptyPage.pageStatus ?? null,
+      }
     }
 
     const page = await ctx.db
@@ -56,8 +66,11 @@ export const listWithMessages = query({
     )
 
     return {
-      ...page,
       page: items,
+      isDone: page.isDone,
+      continueCursor: page.continueCursor,
+      splitCursor: page.splitCursor ?? null,
+      pageStatus: page.pageStatus ?? null,
     }
   },
 })

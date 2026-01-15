@@ -16,4 +16,3 @@ function AppLayout(props: PropsWithChildren) {
 }
 
 export default AppLayout
-

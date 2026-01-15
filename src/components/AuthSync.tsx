@@ -9,25 +9,17 @@ export function AuthSync() {
 
   useEffect(() => {
     if (isSessionLoading) return
-    type SessionUser = {
-      name?: string | null
-      email?: string | null
-      emailVerified?: boolean | null
-      image?: string | null
-    }
-    type SessionData = { user?: SessionUser | null }
 
-    const user = (session as unknown as SessionData)?.user
+    const user = session?.user
     if (!user) return
 
     void ensureUser({
-      name: user.name ?? undefined,
-      email: user.email ?? undefined,
-      emailVerified: user.emailVerified ?? undefined,
+      name: user.name,
+      email: user.email,
+      emailVerified: user.emailVerified,
       image: user.image ?? undefined,
     })
   }, [ensureUser, isSessionLoading, session])
 
   return null
 }
-

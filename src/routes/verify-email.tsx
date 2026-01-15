@@ -14,4 +14,3 @@ function VerifyEmailRoute() {
   const { email } = Route.useSearch()
   return <VerifyEmail email={email} />
 }
-

@@ -1,3 +1,4 @@
+import type { User } from 'better-auth'
 import {
   Sidebar,
   SidebarContent,
@@ -18,13 +19,12 @@ import { useState, useCallback } from 'react'
 import { Skeleton } from '@/components/ui/skeleton'
 import SettingCard from '@/pages/setting/SettingModal'
 import { TooltipText } from '@/components/ui/tooltip'
-import { type User } from 'better-auth'
 import { Link, useNavigate, useRouterState } from '@tanstack/react-router'
 import Modal, { WarningModal } from '@/components/ui-element/Modal'
 import { authClient } from '@/lib/auth-client'
 import { useUIChat } from '@/providers/ChatProvider'
 import { useChatList } from '@/hooks/use-chat-list'
-import ChatSession from './ChatSession'
+import type ChatSession from './ChatSession'
 import { observer } from 'mobx-react-lite'
 
 const { useSession } = authClient
@@ -42,7 +42,10 @@ const ChatSidebar = observer(function ChatSidebar() {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <TooltipText text="You need to be logged in to create a new chat" disabled={!!user}>
+            <TooltipText
+              text="You need to be logged in to create a new chat"
+              disabled={!!user}
+            >
               <SidebarMenuButton asChild size="lg">
                 <Link
                   to="/"
@@ -77,7 +80,10 @@ const ChatSidebar = observer(function ChatSidebar() {
         <SidebarMenu>
           {user && !isSessionLoading && (
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => setSettingsOpen(true)} variant={'default'}>
+              <SidebarMenuButton
+                onClick={() => setSettingsOpen(true)}
+                variant={'default'}
+              >
                 <Settings className="size-4" />
                 <span>Settings</span>
               </SidebarMenuButton>
@@ -98,9 +104,9 @@ const ChatSidebar = observer(function ChatSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton>
               <Avatar className="size-5">
-                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <span className="truncate">{user?.name}</span>
+              <span className="truncate">{user.name}</span>
             </SidebarMenuButton>
 
             <TooltipText text="Sign out">
@@ -150,7 +156,13 @@ const ChatList = observer(function ChatList({
   user: User | null
   isSessionLoading: boolean
 }) {
-  const { chatStore, isChatsLoading, hasNextPage, isFetchingNextPage, fetchNextPage } = useUIChat()
+  const {
+    chatStore,
+    isChatsLoading,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useUIChat()
 
   const chatSessions = chatStore.chatSessions
 
@@ -159,7 +171,9 @@ const ChatList = observer(function ChatList({
     open: boolean
   } | null>(null)
 
-  const { deleteChatById, isDeleting } = useChatList(() => setOpenWarningModal({ id: '', open: false }))
+  const { deleteChatById, isDeleting } = useChatList(() =>
+    setOpenWarningModal({ id: '', open: false }),
+  )
 
   const handleDelete = useCallback((id: string) => {
     setOpenWarningModal({ id, open: true })
@@ -169,7 +183,12 @@ const ChatList = observer(function ChatList({
     void fetchNextPage()
   }, [fetchNextPage])
 
-  if (!isSessionLoading && !user && !isChatsLoading && chatSessions.length === 0) {
+  if (
+    !isSessionLoading &&
+    !user &&
+    !isChatsLoading &&
+    chatSessions.length === 0
+  ) {
     return (
       <SidebarMenu>
         <SidebarMenuItem>
@@ -216,7 +235,10 @@ const ChatList = observer(function ChatList({
                 <Loader2 className="size-4 animate-spin" /> Loading more...
               </div>
             ) : (
-              <div className="text-center text-xs text-muted-foreground" onClick={handleFetchNextPage}>
+              <div
+                className="text-center text-xs text-muted-foreground"
+                onClick={handleFetchNextPage}
+              >
                 Scroll to load more
               </div>
             )}
@@ -279,7 +301,10 @@ const ChatSidebarItem = observer(function ChatSidebarItem({
   return (
     <SidebarMenuItem key={chat.id}>
       <SidebarMenuButton asChild isActive={isActive} className="w-full">
-        <button onClick={(e) => onRouteChange(e, chat.id)} className="w-full truncate text-left">
+        <button
+          onClick={(e) => onRouteChange(e, chat.id)}
+          className="w-full truncate text-left"
+        >
           {chat.title}
         </button>
       </SidebarMenuButton>
@@ -295,4 +320,3 @@ const ChatSidebarItem = observer(function ChatSidebarItem({
 })
 
 export default ChatSidebar
-

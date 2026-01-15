@@ -2,11 +2,6 @@ import { defineSchema, defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
 export default defineSchema({
-  // Kept so the starter `src/routes/*` pages still work while you migrate UI.
-  numbers: defineTable({
-    value: v.number(),
-  }),
-
   users: defineTable({
     id: v.string(),
     name: v.optional(v.string()),
@@ -66,7 +61,11 @@ export default defineSchema({
     .index('by_userId', ['userId'])
     .index('by_userId_provider', ['userId', 'modelProviderId'])
     .index('by_userId_and_isActive', ['userId', 'isActive'])
-    .index('by_userId_provider_isActive', ['userId', 'modelProviderId', 'isActive']),
+    .index('by_userId_provider_isActive', [
+      'userId',
+      'modelProviderId',
+      'isActive',
+    ]),
 
   uploadedFiles: defineTable({
     id: v.string(),

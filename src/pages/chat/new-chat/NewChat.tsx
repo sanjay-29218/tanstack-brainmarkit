@@ -1,10 +1,11 @@
-import { useCallback, useState, useMemo, useEffect } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import ChatComposer from '../shared/ChatComposer'
 import { useUIChat } from '@/providers/ChatProvider'
 import HomeSuggestions from './HomeSuggestions'
 import ChatSession from '../shared/ChatSession'
 import ChatMessageModel from '../chat-preview/chat-message/ChatMessageModel'
-import { generateId, type UIMessage } from 'ai'
+import type { UIMessage } from 'ai'
+import { generateId } from 'ai'
 import { getModelById } from '@/constants/model-registry'
 import { createId } from '@/lib/id'
 import { useQuery } from 'convex/react'
@@ -63,16 +64,27 @@ export default function NewChat() {
     (userMessage: UIMessage) => {
       setIsHomeSuggestionsVisible(false)
       const threadId = createId()
-      const newSession = new ChatSession(threadId, [], 'New Chat', model, undefined, true)
+      const newSession = new ChatSession(
+        threadId,
+        [],
+        'New Chat',
+        model,
+        undefined,
+        true,
+      )
       const newUserMessage = new ChatMessageModel({
         id: generateId(),
         role: 'user',
-        parts: userMessage.parts.filter((part) => part != null),
+        parts: userMessage.parts,
       })
       newSession.setPendingMessage(newUserMessage)
       chatStore.addChatSession(newSession)
       chatStore.setActiveChatId(threadId)
-      void navigate({ to: '/chat/$chatId', params: { chatId: threadId }, replace: true })
+      void navigate({
+        to: '/chat/$chatId',
+        params: { chatId: threadId },
+        replace: true,
+      })
     },
     [navigate, chatStore, model],
   )
@@ -99,8 +111,11 @@ export default function NewChat() {
       ) : (
         <div className="flex flex-1 "></div>
       )}
-      <ChatComposer onSend={onSend} onModelChange={onModelChange} model={model} />
+      <ChatComposer
+        onSend={onSend}
+        onModelChange={onModelChange}
+        model={model}
+      />
     </div>
   )
 }
-

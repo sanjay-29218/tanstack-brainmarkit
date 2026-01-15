@@ -22,6 +22,27 @@ const Login = observer(function Login(props: Props) {
     void navigate({ to: '/' })
   }, [navigate, isSessionLoading, session])
 
+  const handleGoogleSignIn = async () => {
+    if (isSubmitting) return
+    try {
+      setIsSubmitting(true)
+      const res = await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/',
+      })
+
+      const errorMessage = res.error?.message
+      if (errorMessage) toast.error(errorMessage)
+      // On success, Better Auth will redirect to Google.
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to sign in with Google'
+      toast.error(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (isSubmitting) return
@@ -39,9 +60,7 @@ const Login = observer(function Login(props: Props) {
         password,
       })
 
-      const errorMessage =
-        (res as unknown as { error?: { message?: string } })?.error?.message ??
-        (res as unknown as { error?: string })?.error
+      const errorMessage = res.error?.message
       if (errorMessage) {
         toast.error(errorMessage)
         return
@@ -60,7 +79,24 @@ const Login = observer(function Login(props: Props) {
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 px-6 py-10">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold">Login</h1>
-        <p className="text-muted-foreground text-sm">Sign in with your email and password.</p>
+        <p className="text-muted-foreground text-sm">
+          Sign in with your email and password.
+        </p>
+      </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleGoogleSignIn}
+        disabled={isSubmitting}
+      >
+        Continue with Google
+      </Button>
+
+      <div className="text-muted-foreground flex items-center gap-3 text-xs">
+        <div className="bg-border h-px flex-1" />
+        <span>OR</span>
+        <div className="bg-border h-px flex-1" />
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -108,4 +144,3 @@ const Login = observer(function Login(props: Props) {
 })
 
 export default Login
-

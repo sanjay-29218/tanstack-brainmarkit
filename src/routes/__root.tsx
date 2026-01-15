@@ -1,10 +1,15 @@
+/// <reference types="vite/client" />
 import {
   HeadContent,
   Outlet,
   Scripts,
   createRootRouteWithContext,
+  useRouteContext,
 } from '@tanstack/react-router'
 import * as React from 'react'
+import { createServerFn } from '@tanstack/react-start'
+import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
+import type { ConvexQueryClient } from '@convex-dev/react-query'
 import type { QueryClient } from '@tanstack/react-query'
 import appCss from '~/styles/app.css?url'
 import { SidebarProvider } from '@/components/ui/sidebar'
@@ -12,9 +17,17 @@ import { ChatProvider } from '@/providers/ChatProvider'
 import AppLayout from '@/App'
 import { Toaster } from '@/components/ui/sonner'
 import { AuthSync } from '@/components/AuthSync'
+import { authClient } from '~/lib/auth-client'
+import { getToken } from '~/lib/auth-server'
+
+// Get auth information for SSR using available cookies
+const getAuth = createServerFn({ method: 'GET' }).handler(async () => {
+  return await getToken()
+})
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient
+  convexQueryClient: ConvexQueryClient
 }>()({
   head: () => ({
     meta: [
@@ -52,33 +65,56 @@ export const Route = createRootRouteWithContext<{
       { rel: 'icon', href: '/favicon.ico' },
     ],
   }),
+  beforeLoad: async (ctx) => {
+    const token = await getAuth()
+
+    // all queries, mutations and actions through TanStack Query will be
+    // authenticated during SSR if we have a valid token
+    if (token) {
+      // During SSR only (the only time serverHttpClient exists),
+      // set the auth token to make HTTP queries with.
+      ctx.context.convexQueryClient.serverHttpClient?.setAuth(token)
+    }
+
+    return {
+      isAuthenticated: !!token,
+      token,
+    }
+  },
   notFoundComponent: () => <div>Route not found</div>,
   component: RootComponent,
 })
 
 function RootComponent() {
+  const context = useRouteContext({ from: Route.id })
   return (
-    <RootDocument>
-      <Toaster richColors closeButton position="top-center" />
-      <AuthSync />
-      <SidebarProvider>
-        <ChatProvider>
-          <AppLayout>
-            <Outlet />
-          </AppLayout>
-        </ChatProvider>
-      </SidebarProvider>
-    </RootDocument>
+    <ConvexBetterAuthProvider
+      client={context.convexQueryClient.convexClient}
+      authClient={authClient}
+      initialToken={context.token}
+    >
+      <RootDocument>
+        <Toaster richColors closeButton position="top-center" />
+        <AuthSync />
+        <SidebarProvider>
+          <ChatProvider>
+            <AppLayout>
+              <Outlet />
+            </AppLayout>
+          </ChatProvider>
+        </SidebarProvider>
+      </RootDocument>
+    </ConvexBetterAuthProvider>
   )
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html>
+    <html lang="en" className="dark">
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="bg-neutral-950 text-neutral-50">
         {children}
         <Scripts />
       </body>

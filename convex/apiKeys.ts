@@ -17,7 +17,10 @@ export const list = query({
   handler: async (ctx) => {
     const userId = await getUserId(ctx)
     if (!userId) return []
-    const rows = await ctx.db.query('apiKeys').withIndex('by_userId', (q) => q.eq('userId', userId)).collect()
+    const rows = await ctx.db
+      .query('apiKeys')
+      .withIndex('by_userId', (q) => q.eq('userId', userId))
+      .collect()
 
     return rows.map((row) => ({
       id: row.id,
@@ -35,7 +38,9 @@ export const hasActiveKeys = query({
     if (!userId) return { hasApiKeys: false }
     const active = await ctx.db
       .query('apiKeys')
-      .withIndex('by_userId_and_isActive', (q) => q.eq('userId', userId).eq('isActive', true))
+      .withIndex('by_userId_and_isActive', (q) =>
+        q.eq('userId', userId).eq('isActive', true),
+      )
       .first()
     return { hasApiKeys: !!active }
   },
@@ -60,7 +65,9 @@ export const getFreeMessageInfo = query({
 
     const activeKey = await ctx.db
       .query('apiKeys')
-      .withIndex('by_userId_and_isActive', (q) => q.eq('userId', userId).eq('isActive', true))
+      .withIndex('by_userId_and_isActive', (q) =>
+        q.eq('userId', userId).eq('isActive', true),
+      )
       .first()
 
     if (activeKey) {
@@ -71,9 +78,15 @@ export const getFreeMessageInfo = query({
       }
     }
 
-    const user = await ctx.db.query('users').withIndex('by_appId', (q) => q.eq('id', userId)).first()
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_appId', (q) => q.eq('id', userId))
+      .first()
     const currentCount = user?.freeMessageCount ?? 0
-    const remainingMessages = Math.max(0, FREE_TIER_MESSAGE_LIMIT - currentCount)
+    const remainingMessages = Math.max(
+      0,
+      FREE_TIER_MESSAGE_LIMIT - currentCount,
+    )
 
     return {
       hasApiKeys: false,
@@ -91,7 +104,10 @@ export const getOpenRouterKeyEncrypted = query({
     const row = await ctx.db
       .query('apiKeys')
       .withIndex('by_userId_provider_isActive', (q) =>
-        q.eq('userId', userId).eq('modelProviderId', 'openrouter').eq('isActive', true),
+        q
+          .eq('userId', userId)
+          .eq('modelProviderId', 'openrouter')
+          .eq('isActive', true),
       )
       .first()
     return { encryptedKey: row?.key ?? null }
@@ -106,7 +122,10 @@ export const getOpenRouterKey = query({
     const row = await ctx.db
       .query('apiKeys')
       .withIndex('by_userId_provider_isActive', (q) =>
-        q.eq('userId', userId).eq('modelProviderId', 'openrouter').eq('isActive', true),
+        q
+          .eq('userId', userId)
+          .eq('modelProviderId', 'openrouter')
+          .eq('isActive', true),
       )
       .first()
 
@@ -123,7 +142,10 @@ export const deleteKey = mutation({
   returns: v.object({ id: v.string() }),
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx)
-    const existing = await ctx.db.query('apiKeys').withIndex('by_appId', (q) => q.eq('id', args.id)).first()
+    const existing = await ctx.db
+      .query('apiKeys')
+      .withIndex('by_appId', (q) => q.eq('id', args.id))
+      .first()
 
     if (!existing || existing.userId !== userId) {
       return { id: args.id }
@@ -179,7 +201,10 @@ export const update = mutation({
     }
 
     const encryptedKey = encrypt(args.key)
-    const existing = await ctx.db.query('apiKeys').withIndex('by_appId', (q) => q.eq('id', args.id)).first()
+    const existing = await ctx.db
+      .query('apiKeys')
+      .withIndex('by_appId', (q) => q.eq('id', args.id))
+      .first()
 
     if (!existing || existing.userId !== userId) {
       throw new Error('API key not found')
@@ -193,4 +218,3 @@ export const update = mutation({
     return { id: args.id }
   },
 })
-

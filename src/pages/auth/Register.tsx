@@ -23,6 +23,28 @@ const Register = observer(function Register(props: Props) {
     void navigate({ to: '/' })
   }, [navigate, isSessionLoading, session])
 
+  const handleGoogleSignIn = async () => {
+    if (isSubmitting) return
+    try {
+      setIsSubmitting(true)
+      const res = await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: '/',
+      })
+
+      const errorMessage =
+        (res as unknown as { error?: { message?: string } })?.error?.message ??
+        (res as unknown as { error?: string })?.error
+      if (errorMessage) toast.error(errorMessage)
+      // On success, Better Auth will redirect to Google.
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to continue with Google'
+      toast.error(message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (isSubmitting) return
@@ -65,6 +87,21 @@ const Register = observer(function Register(props: Props) {
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold">Create account</h1>
         <p className="text-muted-foreground text-sm">Sign up with your email and password.</p>
+      </div>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={handleGoogleSignIn}
+        disabled={isSubmitting}
+      >
+        Continue with Google
+      </Button>
+
+      <div className="text-muted-foreground flex items-center gap-3 text-xs">
+        <div className="bg-border h-px flex-1" />
+        <span>OR</span>
+        <div className="bg-border h-px flex-1" />
       </div>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">

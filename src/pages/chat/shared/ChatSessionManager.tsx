@@ -7,19 +7,21 @@ import { DefaultChatTransport } from 'ai'
 import { fetchWithErrorHandlers } from '@/lib/utils'
 import { toast } from 'sonner'
 import { handlePopupError } from '@/error/error'
-import ChatSession from './ChatSession'
+import type ChatSession from './ChatSession'
 import type ChatMessageModel from '../chat-preview/chat-message/ChatMessageModel'
 import { useConvex, useQuery } from 'convex/react'
 import { api } from '@/lib/convex-api'
 import { authClient } from '@/lib/auth-client'
 
 const getChatApiURL = () => {
-  const envUrl = (import.meta as unknown as { env?: Record<string, string | undefined> }).env
-    ?.VITE_API_URL
+  const convexSiteUrl = import.meta.env.VITE_CONVEX_SITE_URL
 
-  if (envUrl) {
-    return `${envUrl}/api/stream`
+  if (convexSiteUrl) {
+    return `${convexSiteUrl}/stream`
   }
+
+  // Fallback for development
+  return '/stream'
 }
 
 function ClientOnly({ children }: { children: React.ReactNode }) {
@@ -55,18 +57,9 @@ const ChatSessionController = observer(function ChatSessionController({
       new DefaultChatTransport({
         api: getChatApiURL(),
         fetch: async (input, init) => {
-          const sessionRes = await authClient.getSession()
-          type SessionResponseData = {
-            session?: { token?: string | null } | null
-            token?: string | null
-          }
-          const data = (sessionRes as unknown as { data?: SessionResponseData | null })?.data
-          const token = data?.session?.token ?? data?.token ?? null
-          const headers = new Headers(init?.headers)
-          if (token) {
-            headers.set('Authorization', `Bearer ${token}`)
-          }
-          return fetchWithErrorHandlers(input, { ...init, headers })
+          // Auth is via Better Auth's Convex JWT cookie on the convex.site domain.
+          // Sending an opaque session token as Bearer breaks Convex auth (expects JWT).
+          return fetchWithErrorHandlers(input, init)
         },
         prepareSendMessagesRequest(req) {
           const threadIdForRequest = chat.id
@@ -82,6 +75,7 @@ const ChatSessionController = observer(function ChatSessionController({
             },
           }
         },
+        // Send Convex auth cookies cross-origin.
         credentials: 'include',
       }),
     [chat.id, chat.model],
@@ -132,7 +126,8 @@ const ChatSessionController = observer(function ChatSessionController({
       const lastMessage = messages.at(-1)
       if (lastMessage) {
         runInAction(() => {
-          ;(lastMessage as unknown as ChatMessageModel).errorMessage = error.message
+          ;(lastMessage as unknown as ChatMessageModel).errorMessage =
+            error.message
         })
       }
       handlePopupError(error)
@@ -158,7 +153,7 @@ const ChatSessionController = observer(function ChatSessionController({
           chat.setShowFullHeight(true)
           void sendMessageRef.current(userMessage)
         },
-        setMessages: (messages: UIMessage[]) => {
+        setMessages: (messages: Array<UIMessage>) => {
           setMessagesRef.current(messages)
         },
         stop: () => {
@@ -170,7 +165,7 @@ const ChatSessionController = observer(function ChatSessionController({
     )
 
     if (chat.pendingMessage) {
-      const plainMessage = toJS(chat.pendingMessage.uiMessage) as UIMessage
+      const plainMessage = toJS(chat.pendingMessage.uiMessage)
       void sendMessageRef.current(plainMessage)
       chat.clearPendingMessage()
     }
@@ -186,7 +181,9 @@ const ChatSessionController = observer(function ChatSessionController({
   return null
 })
 
-const showFreeMessageInfoToast = async (remainingMessages: number | null | undefined) => {
+const showFreeMessageInfoToast = async (
+  remainingMessages: number | null | undefined,
+) => {
   if (!remainingMessages) return
   toast.info(
     `You have ${remainingMessages} free message${remainingMessages !== 1 ? 's' : ''} remaining`,
@@ -195,4 +192,3 @@ const showFreeMessageInfoToast = async (remainingMessages: number | null | undef
     },
   )
 }
-

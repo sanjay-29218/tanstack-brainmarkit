@@ -6,7 +6,11 @@ const R2_ENDPOINT = `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.c
 const R2_BUCKET = process.env.R2_BUCKET_NAME
 const R2_PUBLIC_BASE_URL = process.env.R2_PUBLIC_BASE_URL
 
-const presignUploadUrl = async (fileName: string, mimeType: string, size: number) => {
+const presignUploadUrl = async (
+  fileName: string,
+  mimeType: string,
+  size: number,
+) => {
   const [{ PutObjectCommand, S3Client }, { getSignedUrl }] = await Promise.all([
     import('@aws-sdk/client-s3'),
     import('@aws-sdk/s3-request-presigner'),
@@ -61,7 +65,11 @@ export const presignUploadUrls = action({
 
     const filesWithPresignedUrls = await Promise.all(
       args.files.map(async (file) => {
-        const { presignedUrl, objectKey } = await presignUploadUrl(file.fileName, file.mimeType, file.size)
+        const { presignedUrl, objectKey } = await presignUploadUrl(
+          file.fileName,
+          file.mimeType,
+          file.size,
+        )
         return {
           tempId: file.tempId,
           presignedUrl,
@@ -99,7 +107,8 @@ export const saveMetadataBatch = mutation({
     }
 
     const now = Date.now()
-    const inserted: Array<{ id: string; fileUrl: string; objectKey: string }> = []
+    const inserted: Array<{ id: string; fileUrl: string; objectKey: string }> =
+      []
 
     for (const file of args.files) {
       const id = crypto.randomUUID()
@@ -121,4 +130,3 @@ export const saveMetadataBatch = mutation({
     return inserted
   },
 })
-

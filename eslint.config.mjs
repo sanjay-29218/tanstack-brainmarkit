@@ -13,4 +13,11 @@ export default defineConfig([
     // leave for later
     'src/components/ai-elements/**',
   ]),
+  {
+    rules: {
+      'import/order': 'off',
+      'sort-imports': 'off',
+      'import/consistent-type-specifier-style': 'off',
+    },
+  },
 ])

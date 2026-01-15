@@ -43,7 +43,8 @@ export const ensure = mutation({
     const updates: Record<string, unknown> = { updatedAt: now }
     if (args.name !== undefined) updates.name = args.name
     if (args.email !== undefined) updates.email = args.email
-    if (args.emailVerified !== undefined) updates.emailVerified = args.emailVerified
+    if (args.emailVerified !== undefined)
+      updates.emailVerified = args.emailVerified
     if (args.image !== undefined) updates.image = args.image
 
     if (Object.keys(updates).length > 1) {
@@ -86,4 +87,3 @@ export const incrementFreeMessageCount = mutation({
     return { freeMessageCount: nextCount }
   },
 })
-

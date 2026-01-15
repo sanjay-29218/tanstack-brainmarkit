@@ -13,9 +13,9 @@ import { Route as VerifyEmailRouteImport } from './routes/verify-email'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EmailVerificationSuccessRouteImport } from './routes/email-verification-success'
-import { Route as AnotherPageRouteImport } from './routes/anotherPage'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ChatChatIdRouteImport } from './routes/chat/$chatId'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
@@ -38,11 +38,6 @@ const EmailVerificationSuccessRoute =
     path: '/email-verification-success',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AnotherPageRoute = AnotherPageRouteImport.update({
-  id: '/anotherPage',
-  path: '/anotherPage',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -53,73 +48,78 @@ const ChatChatIdRoute = ChatChatIdRouteImport.update({
   path: '/chat/$chatId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
   '/email-verification-success': typeof EmailVerificationSuccessRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/verify-email': typeof VerifyEmailRoute
   '/chat/$chatId': typeof ChatChatIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
   '/email-verification-success': typeof EmailVerificationSuccessRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/verify-email': typeof VerifyEmailRoute
   '/chat/$chatId': typeof ChatChatIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/anotherPage': typeof AnotherPageRoute
   '/email-verification-success': typeof EmailVerificationSuccessRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/verify-email': typeof VerifyEmailRoute
   '/chat/$chatId': typeof ChatChatIdRoute
+  '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/anotherPage'
     | '/email-verification-success'
     | '/login'
     | '/register'
     | '/verify-email'
     | '/chat/$chatId'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/anotherPage'
     | '/email-verification-success'
     | '/login'
     | '/register'
     | '/verify-email'
     | '/chat/$chatId'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
-    | '/anotherPage'
     | '/email-verification-success'
     | '/login'
     | '/register'
     | '/verify-email'
     | '/chat/$chatId'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AnotherPageRoute: typeof AnotherPageRoute
   EmailVerificationSuccessRoute: typeof EmailVerificationSuccessRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   ChatChatIdRoute: typeof ChatChatIdRoute
+  ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -152,13 +152,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmailVerificationSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/anotherPage': {
-      id: '/anotherPage'
-      path: '/anotherPage'
-      fullPath: '/anotherPage'
-      preLoaderRoute: typeof AnotherPageRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -173,27 +166,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatChatIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AnotherPageRoute: AnotherPageRoute,
   EmailVerificationSuccessRoute: EmailVerificationSuccessRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   ChatChatIdRoute: ChatChatIdRoute,
+  ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
