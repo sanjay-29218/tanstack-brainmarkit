@@ -11,17 +11,26 @@ import type ChatSession from './ChatSession'
 import type ChatMessageModel from '../chat-preview/chat-message/ChatMessageModel'
 import { useConvex, useQuery } from 'convex/react'
 import { api } from '@/lib/convex-api'
-import { authClient } from '@/lib/auth-client'
 
 const getChatApiURL = () => {
-  const convexSiteUrl = import.meta.env.VITE_CONVEX_SITE_URL
-
-  if (convexSiteUrl) {
-    return `${convexSiteUrl}/stream`
-  }
-
-  // Fallback for development
   return '/stream'
+}
+
+const createServerFnFetch = () => {
+  return async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = typeof input === 'string' ? input : input.toString()
+    const rawBody = init?.body ? JSON.parse(init.body as string) : undefined
+    const headers = new Headers(init?.headers)
+    headers.set('x-tsr-serverFn', 'true')
+    headers.set('Content-Type', 'application/json')
+
+    return fetchWithErrorHandlers(url, {
+      ...init,
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ data: rawBody }),
+    })
+  }
 }
 
 function ClientOnly({ children }: { children: React.ReactNode }) {
@@ -56,11 +65,7 @@ const ChatSessionController = observer(function ChatSessionController({
     () =>
       new DefaultChatTransport({
         api: getChatApiURL(),
-        fetch: async (input, init) => {
-          // Auth is via Better Auth's Convex JWT cookie on the convex.site domain.
-          // Sending an opaque session token as Bearer breaks Convex auth (expects JWT).
-          return fetchWithErrorHandlers(input, init)
-        },
+        fetch: createServerFnFetch(),
         prepareSendMessagesRequest(req) {
           const threadIdForRequest = chat.id
           const userMsg = req.messages.at(-1)
@@ -153,8 +158,8 @@ const ChatSessionController = observer(function ChatSessionController({
           chat.setShowFullHeight(true)
           void sendMessageRef.current(userMessage)
         },
-        setMessages: (messages: Array<UIMessage>) => {
-          setMessagesRef.current(messages)
+        setMessages: (nextMessages: Array<UIMessage>) => {
+          setMessagesRef.current(nextMessages)
         },
         stop: () => {
           void stopRef.current()
@@ -181,7 +186,7 @@ const ChatSessionController = observer(function ChatSessionController({
   return null
 })
 
-const showFreeMessageInfoToast = async (
+const showFreeMessageInfoToast = (
   remainingMessages: number | null | undefined,
 ) => {
   if (!remainingMessages) return

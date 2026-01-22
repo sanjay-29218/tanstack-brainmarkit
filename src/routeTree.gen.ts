@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as StreamRouteImport } from './routes/stream'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as EmailVerificationSuccessRouteImport } from './routes/email-verification-success'
@@ -20,6 +21,11 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StreamRoute = StreamRouteImport.update({
+  id: '/stream',
+  path: '/stream',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RegisterRoute = RegisterRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/email-verification-success': typeof EmailVerificationSuccessRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/stream': typeof StreamRoute
   '/verify-email': typeof VerifyEmailRoute
   '/chat/$chatId': typeof ChatChatIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/email-verification-success': typeof EmailVerificationSuccessRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/stream': typeof StreamRoute
   '/verify-email': typeof VerifyEmailRoute
   '/chat/$chatId': typeof ChatChatIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/email-verification-success': typeof EmailVerificationSuccessRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
+  '/stream': typeof StreamRoute
   '/verify-email': typeof VerifyEmailRoute
   '/chat/$chatId': typeof ChatChatIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/email-verification-success'
     | '/login'
     | '/register'
+    | '/stream'
     | '/verify-email'
     | '/chat/$chatId'
     | '/api/auth/$'
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/email-verification-success'
     | '/login'
     | '/register'
+    | '/stream'
     | '/verify-email'
     | '/chat/$chatId'
     | '/api/auth/$'
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/email-verification-success'
     | '/login'
     | '/register'
+    | '/stream'
     | '/verify-email'
     | '/chat/$chatId'
     | '/api/auth/$'
@@ -117,6 +129,7 @@ export interface RootRouteChildren {
   EmailVerificationSuccessRoute: typeof EmailVerificationSuccessRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
+  StreamRoute: typeof StreamRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   ChatChatIdRoute: typeof ChatChatIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/verify-email'
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stream': {
+      id: '/stream'
+      path: '/stream'
+      fullPath: '/stream'
+      preLoaderRoute: typeof StreamRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/register': {
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmailVerificationSuccessRoute: EmailVerificationSuccessRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
+  StreamRoute: StreamRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   ChatChatIdRoute: ChatChatIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

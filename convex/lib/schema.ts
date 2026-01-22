@@ -2,7 +2,7 @@ import { z } from 'zod'
 import type { UIMessage } from 'ai'
 
 export const postRequestBodySchema = z.object({
-  threadId: z.string(),
+  threadId: z.uuid(),
   userMessage: z.object({
     id: z.string(),
     role: z.enum(['user', 'assistant', 'system', 'tool']),
