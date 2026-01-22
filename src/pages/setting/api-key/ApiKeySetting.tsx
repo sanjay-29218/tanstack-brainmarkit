@@ -1,20 +1,24 @@
 import { useEffect, useState } from 'react'
 import { observer } from 'mobx-react-lite'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ProviderDropdown } from './ProviderDropdown'
 import { ApiKeySettingModel } from './ApiKeySettingModel'
 import { ALL_PROVIDERS } from '@/constants/api-providers'
 import ProviderApiKeyInput from './ProviderApiKeyInput'
 import { toast } from 'sonner'
-import { useUIChat } from '@/providers/ChatProvider'
 import { MISTRAL_DEVSTRAL_2_2512 } from '@/constants/model-registry'
 import { useMutation, useQuery } from 'convex/react'
 import { api } from '@/lib/convex-api'
 
 const ApiKeySettingComponent = observer(function ApiKeySettingComponent() {
   const [model] = useState(() => new ApiKeySettingModel())
-  const { chatStore } = useUIChat()
 
   const apiKeys = useQuery(api.apiKeys.list)
   const isPending = apiKeys === undefined
@@ -73,7 +77,6 @@ const ApiKeySettingComponent = observer(function ApiKeySettingComponent() {
     const resetSelectedModel = () => {
       localStorage.removeItem('selectedModel')
       localStorage.setItem('selectedModel', MISTRAL_DEVSTRAL_2_2512.id)
-      chatStore.setSelectedModel(MISTRAL_DEVSTRAL_2_2512.id)
     }
 
     if (!apiKey.id) {
@@ -101,7 +104,9 @@ const ApiKeySettingComponent = observer(function ApiKeySettingComponent() {
     <Card>
       <CardHeader>
         <CardTitle>Model providers</CardTitle>
-        <CardDescription>Add provider API keys. We will use these to call their models.</CardDescription>
+        <CardDescription>
+          Add provider API keys. We will use these to call their models.
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <ProviderDropdown
@@ -124,7 +129,9 @@ const ApiKeySettingComponent = observer(function ApiKeySettingComponent() {
 
             <div className="grid gap-5">
               {model.apiKeys.map((apiKey) => {
-                const provider = ALL_PROVIDERS.find((p) => p.id === apiKey.modelProviderId)
+                const provider = ALL_PROVIDERS.find(
+                  (p) => p.id === apiKey.modelProviderId,
+                )
                 if (!provider) return null
 
                 const isSaving = savingKeyId === apiKey.modelProviderId
@@ -137,8 +144,12 @@ const ApiKeySettingComponent = observer(function ApiKeySettingComponent() {
                       model.updateApiKeyValue(apiKey.modelProviderId, newValue)
                     }
                     onBlur={() => void handleSaveApiKey(apiKey.modelProviderId)}
-                    onDelete={() => void handleDeleteApiKey(apiKey.modelProviderId)}
-                    isDeleting={deletingKeyId === apiKey.modelProviderId && isDeleting}
+                    onDelete={() =>
+                      void handleDeleteApiKey(apiKey.modelProviderId)
+                    }
+                    isDeleting={
+                      deletingKeyId === apiKey.modelProviderId && isDeleting
+                    }
                     isSaving={isSaving}
                   />
                 )
@@ -169,4 +180,3 @@ function ApiKeyLoadingSkeleton() {
     </div>
   )
 }
-

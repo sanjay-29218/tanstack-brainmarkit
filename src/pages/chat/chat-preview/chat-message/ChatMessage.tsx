@@ -1,11 +1,10 @@
-import ChatMessageModel from './ChatMessageModel'
+import type ChatMessageModel from './ChatMessageModel'
 import { UserMessage } from './UserMessage'
 import { AssistantMessage } from './AssistantMessage'
 import { observer } from 'mobx-react-lite'
 import { memo } from 'react'
 import { useUIChat } from '@/providers/ChatProvider'
 import { toJS } from 'mobx'
-import type { UIMessage } from 'ai'
 
 interface ChatMessageProps {
   message: ChatMessageModel
@@ -20,25 +19,29 @@ const ChatMessage = observer(function ChatMessage(props: ChatMessageProps) {
   const handleRetry = () => {
     if (!activeChatSession?.chatApi) return
 
-    const messageIndex = activeChatSession.messages.findIndex((m) => m.id === message.id)
+    const messageIndex = activeChatSession.messages.findIndex(
+      (m) => m.id === message.id,
+    )
     if (messageIndex === -1) return
 
     const parentMessageId = message.parentMessageId
     if (!parentMessageId) return
 
-    const parentIndex = activeChatSession.messages.findIndex((m) => m.id === parentMessageId)
+    const parentIndex = activeChatSession.messages.findIndex(
+      (m) => m.id === parentMessageId,
+    )
     if (parentIndex === -1) return
 
     const messagesToKeep = activeChatSession.messages.slice(0, parentIndex + 1)
     const lastMessageToResend = messagesToKeep.at(-1)
     if (!lastMessageToResend) return
 
-    const uiMessagesToKeep = activeChatSession.getUiMessagesWithParts(messagesToKeep)
+    const uiMessagesToKeep =
+      activeChatSession.getUiMessagesWithParts(messagesToKeep)
     activeChatSession.setMessages(uiMessagesToKeep)
     activeChatSession.chatApi.setMessages(uiMessagesToKeep)
 
-    activeChatSession.setShouldRefetchAfterFinish(true)
-    activeChatSession.chatApi.send(toJS(lastMessageToResend.uiMessage) as UIMessage)
+    activeChatSession.chatApi.send(toJS(lastMessageToResend.uiMessage))
   }
 
   const handleRetryWithModel = (selectedModel: string) => {
@@ -49,11 +52,17 @@ const ChatMessage = observer(function ChatMessage(props: ChatMessageProps) {
   }
 
   if (isUser) {
-    return <UserMessage message={message} onRetryWithModel={handleRetryWithModel} />
+    return (
+      <UserMessage message={message} onRetryWithModel={handleRetryWithModel} />
+    )
   }
 
-  return <AssistantMessage message={message} onRetryWithModel={handleRetryWithModel} />
+  return (
+    <AssistantMessage
+      message={message}
+      onRetryWithModel={handleRetryWithModel}
+    />
+  )
 })
 
 export default memo(ChatMessage)
-

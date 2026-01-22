@@ -97,9 +97,6 @@ const ChatSessionController = observer(function ChatSessionController({
       let messagesForSession = data.messages
 
       if (data.isAbort) {
-        if (chat.shouldRefetchAfterFinish) {
-          chat.setShouldRefetchAfterFinish(false)
-        }
         const lastMessage = data.messages.at(-1)
         const newMessages = data.messages.map((message) => {
           if (message.id === lastMessage?.id) {
@@ -115,9 +112,6 @@ const ChatSessionController = observer(function ChatSessionController({
       }
 
       chat.setMessages(messagesForSession)
-      if (chat.shouldRefetchAfterFinish) {
-        chat.setShouldRefetchAfterFinish(false)
-      }
 
       const currentHasApiKeys = freeMessageInfo?.hasApiKeys ?? false
 

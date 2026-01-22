@@ -4,16 +4,8 @@ import ChatSession from '@/pages/chat/shared/ChatSession'
 class ChatStore {
   chatSessions: ChatSession[] = []
   activeChatId?: string
-  selectedModel?: string
 
   constructor() {
-    if (typeof window !== 'undefined') {
-      const savedModel = window.localStorage.getItem('selectedModel')
-      if (savedModel) {
-        this.selectedModel = savedModel
-      }
-    }
-
     makeObservable(this, {
       chatSessions: observable,
       activeChatId: observable,
@@ -21,13 +13,10 @@ class ChatStore {
       setChatSessions: action,
       addChatSession: action,
       removeChatSession: action,
-      updateChatSession: action,
       clearChatSessions: action,
       syncServerSessions: action,
       setActiveChatId: action,
       resetActiveChatId: action,
-      selectedModel: observable,
-      setSelectedModel: action,
     })
   }
 
@@ -36,14 +25,6 @@ class ChatStore {
     return this.activeChatId
       ? this.chatSessions.find((chat) => chat.id === this.activeChatId)
       : undefined
-  }
-
-  setSelectedModel(model: string) {
-    if (!model) return
-    this.selectedModel = model
-    if (typeof window !== 'undefined') {
-      window.localStorage.setItem('selectedModel', model)
-    }
   }
 
   setActiveChatId(chatId: string | undefined) {
@@ -59,7 +40,9 @@ class ChatStore {
   }
 
   addChatSession(session: ChatSession) {
-    const existingIndex = this.chatSessions.findIndex((s) => s.id === session.id)
+    const existingIndex = this.chatSessions.findIndex(
+      (s) => s.id === session.id,
+    )
     if (existingIndex >= 0) {
       this.chatSessions[existingIndex] = session
     } else {
@@ -69,13 +52,6 @@ class ChatStore {
 
   removeChatSession(chatId: string) {
     this.chatSessions = this.chatSessions.filter((s) => s.id !== chatId)
-  }
-
-  updateChatSession(chatId: string, updater: (session: ChatSession) => void) {
-    const session = this.chatSessions.find((s) => s.id === chatId)
-    if (session) {
-      updater(session)
-    }
   }
 
   clearChatSessions() {
@@ -115,7 +91,9 @@ class ChatStore {
 
       // Don't clobber an in-flight stream with server snapshots.
       if (!existing.isStreaming) {
-        existing.setAllMessages(serverSession.allMessages.map((m) => m.uiMessage))
+        existing.setAllMessages(
+          serverSession.allMessages.map((m) => m.uiMessage),
+        )
 
         if (existing.chatApi) {
           existing.chatApi.setMessages(
@@ -143,4 +121,3 @@ class ChatStore {
 }
 
 export const chatStore = new ChatStore()
-

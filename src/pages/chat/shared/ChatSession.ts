@@ -6,7 +6,7 @@ const ROOT_PARENT_KEY = '__root__'
 
 interface ChatApi {
   send: (userMessage: UIMessage) => void
-  setMessages: (messages: UIMessage[]) => void
+  setMessages: (messages: Array<UIMessage>) => void
   stop: () => void
   status: ChatStatus
 }
@@ -25,23 +25,20 @@ export interface StreamingContent {
 export default class ChatSession {
   id: string // thread id
   title?: string
-  messages: ChatMessageModel[] // active branch (visible messages)
-  allMessages: ChatMessageModel[] // all messages (tree)
+  messages: Array<ChatMessageModel> // active branch (visible messages)
+  allMessages: Array<ChatMessageModel> // all messages (tree)
   status: ChatStatus
   model: string
   chatApi?: ChatApi
   isStreaming?: boolean
   pendingMessage?: ChatMessageModel | null
   isNew?: boolean
-  displayText: string
   showFullHeight?: boolean
-  isActive?: boolean
   selectedChildByParentId: Map<string, string>
-  shouldRefetchAfterFinish: boolean
 
   constructor(
     id: string,
-    messages: UIMessage[],
+    messages: Array<UIMessage>,
     title?: string,
     model?: string,
     chatApi?: ChatApi,
@@ -55,20 +52,14 @@ export default class ChatSession {
     this.model = model ?? 'gemini-2.5-flash'
     this.chatApi = chatApi
     this.isNew = isNew
-    this.displayText = ''
-    this.isActive = false
     this.selectedChildByParentId = new Map()
-    this.shouldRefetchAfterFinish = false
     makeObservable(this, {
       status: observable,
-      setStatus: action,
       isStreaming: observable,
       messages: observable,
       setMessages: action,
       allMessages: observable,
       setAllMessages: action,
-      displayText: observable,
-      setDisplayText: action,
       init: action,
       chatApi: observable,
       setChatApi: action,
@@ -81,16 +72,11 @@ export default class ChatSession {
       clearPendingMessage: action,
       showFullHeight: observable,
       setShowFullHeight: action,
-      isActive: observable,
-      setIsActive: action,
-      addErrorMessageOptimistically: action,
       setStreamingStatus: action,
       setStreamingMessage: action,
       selectedChildByParentId: observable,
       selectSiblingMessageVersion: action,
       selectChildForParentMessage: action,
-      shouldRefetchAfterFinish: observable,
-      setShouldRefetchAfterFinish: action,
     })
 
     this.recomputeActiveBranchMessages()
@@ -119,12 +105,7 @@ export default class ChatSession {
       this.allMessages.find((m) => !m.parentMessageId?.trim()) ??
       this.allMessages[0]
 
-    if (!fallbackRoot) {
-      this.messages = []
-      return
-    }
-
-    const nextMessages: ChatMessageModel[] = []
+    const nextMessages: Array<ChatMessageModel> = []
     const visited = new Set<string>()
     let current: ChatMessageModel | undefined = fallbackRoot
 
@@ -151,11 +132,11 @@ export default class ChatSession {
   private getChildMessageIds(
     parentId: string,
     messageById: Map<string, ChatMessageModel>,
-  ): string[] {
+  ): Array<string> {
     if (parentId === ROOT_PARENT_KEY) {
-      const rootIds: string[] = []
+      const rootIds: Array<string> = []
       for (const m of this.allMessages) {
-        if (m.parentMessageId?.trim()) continue
+        if (m.parentMessageId && m.parentMessageId.trim()) continue
         if (!messageById.has(m.id)) continue
         rootIds.push(m.id)
       }
@@ -168,7 +149,7 @@ export default class ChatSession {
     )
     if (declared.length > 0) return declared
 
-    const derived: string[] = []
+    const derived: Array<string> = []
     for (const m of this.allMessages) {
       if (m.parentMessageId === parentId) {
         derived.push(m.id)
@@ -179,7 +160,8 @@ export default class ChatSession {
 
   private toUiMessageWithParts(message: ChatMessageModel): UIMessage {
     const base = message.uiMessage
-    const baseMetadata = (base.metadata as Record<string, unknown> | undefined) ?? {}
+    const baseMetadata =
+      (base.metadata as Record<string, unknown> | undefined) ?? {}
 
     if (Array.isArray(base.parts) && base.parts.length > 0) {
       return { ...base, metadata: baseMetadata }
@@ -192,7 +174,7 @@ export default class ChatSession {
     }
 
     if (message.role === 'user') {
-      if (message.text?.trim()) {
+      if (message.text.trim()) {
         parts.push({ type: 'text', text: message.text })
       }
       if (message.files.length > 0) {
@@ -201,22 +183,24 @@ export default class ChatSession {
       return { ...base, parts, metadata: baseMetadata }
     }
 
-    if (message.text?.trim()) {
+    if (message.text.trim()) {
       parts.push({ type: 'text', text: message.text })
     }
 
     return { ...base, parts, metadata: baseMetadata }
   }
 
-  getUiMessagesWithParts(messages: ChatMessageModel[]): UIMessage[] {
+  getUiMessagesWithParts(messages: Array<ChatMessageModel>): Array<UIMessage> {
     return messages.map((m) => this.toUiMessageWithParts(m))
   }
 
-  getActiveBranchUiMessagesWithParts(): UIMessage[] {
+  getActiveBranchUiMessagesWithParts(): Array<UIMessage> {
     return this.getUiMessagesWithParts(this.messages)
   }
 
-  private normalizeLinearMessages(messages: UIMessage[]): UIMessage[] {
+  private normalizeLinearMessages(
+    messages: Array<UIMessage>,
+  ): Array<UIMessage> {
     if (messages.length === 0) return []
 
     return messages.map((message, index) => {
@@ -225,7 +209,7 @@ export default class ChatSession {
         (message.metadata as
           | {
               parentMessageId?: string
-              childrenMessageIds?: string[]
+              childrenMessageIds?: Array<string>
             }
           | undefined) ?? {}
 
@@ -243,7 +227,12 @@ export default class ChatSession {
     })
   }
 
-  init(messages: UIMessage[], status: ChatStatus, api: ChatApi, model: string) {
+  init(
+    messages: Array<UIMessage>,
+    status: ChatStatus,
+    api: ChatApi,
+    model: string,
+  ) {
     this.status = status
     this.chatApi = api
     this.model = model
@@ -257,7 +246,9 @@ export default class ChatSession {
 
     if (this.allMessages.length === 0) {
       const normalizedMessages = this.normalizeLinearMessages(messages)
-      this.allMessages = normalizedMessages.map((message) => new ChatMessageModel(message))
+      this.allMessages = normalizedMessages.map(
+        (message) => new ChatMessageModel(message),
+      )
       this.recomputeActiveBranchMessages()
       return
     }
@@ -265,30 +256,20 @@ export default class ChatSession {
     this.setMessages(messages)
   }
 
-  setDisplayText(displayText: string) {
-    this.displayText = displayText
-  }
-
-  setIsActive(isActive: boolean) {
-    this.isActive = isActive
-  }
-
-  setShouldRefetchAfterFinish(shouldRefetchAfterFinish: boolean) {
-    this.shouldRefetchAfterFinish = shouldRefetchAfterFinish
-  }
-
   setChatApi(chatApi: ChatApi) {
     this.chatApi = chatApi
   }
 
-  setAllMessages(messages: UIMessage[]) {
+  setAllMessages(messages: Array<UIMessage>) {
     this.allMessages = messages.map((message) => new ChatMessageModel(message))
     this.recomputeActiveBranchMessages()
   }
 
-  setMessages(messages: UIMessage[]) {
+  setMessages(messages: Array<UIMessage>) {
     const normalizedMessages = this.normalizeLinearMessages(messages)
-    const nextBranchMessages = normalizedMessages.map((message) => new ChatMessageModel(message))
+    const nextBranchMessages = normalizedMessages.map(
+      (message) => new ChatMessageModel(message),
+    )
 
     const nextSelectedChildByParentId = new Map<string, string>()
     const firstMessageId = nextBranchMessages[0]?.id
@@ -313,7 +294,7 @@ export default class ChatSession {
       allById.set(m.id, m)
     }
 
-    const nextAllMessages: ChatMessageModel[] = []
+    const nextAllMessages: Array<ChatMessageModel> = []
     const seen = new Set<string>()
     for (const existing of this.allMessages) {
       const merged = allById.get(existing.id)
@@ -452,7 +433,7 @@ export default class ChatSession {
 
   setStreamingMessage(message: UIMessage | undefined) {
     if (!message) return
-    const metadata = message?.metadata as { errorMessage?: string } | undefined
+    const metadata = message.metadata as { errorMessage?: string } | undefined
 
     const lastMessageModel = this.messages.at(-1)
 
@@ -463,7 +444,7 @@ export default class ChatSession {
         .find((m) => m.role === 'user' && m.model)
 
       if (previousUserMessage?.model) {
-        const currentMetadata = (message.metadata as Record<string, unknown>) ?? {}
+        const currentMetadata = message.metadata as Record<string, unknown>
         message.metadata = {
           ...currentMetadata,
           model: previousUserMessage.model,
@@ -471,7 +452,8 @@ export default class ChatSession {
       }
 
       const existingIndex = this.messages.findIndex((m) => m.id === message.id)
-      const existing = existingIndex >= 0 ? this.messages[existingIndex] : undefined
+      const existing =
+        existingIndex >= 0 ? this.messages[existingIndex] : undefined
 
       if (existing && existing.role === 'assistant') {
         existing.setErrorMessage(metadata?.errorMessage)
@@ -498,16 +480,12 @@ export default class ChatSession {
     const messageExists = this.messages.some((m) => m.id === message.id)
     if (messageExists) return
     const userMessage = this.messages.at(-2)
-    if (userMessage?.role === 'user' && userMessage?.model) {
+    if (userMessage && userMessage.role === 'user' && userMessage.model) {
       message.metadata = {
-        model: userMessage?.model,
+        model: userMessage.model,
       }
     }
     this.messages.push(new ChatMessageModel(message))
-  }
-
-  setStatus(status: ChatStatus) {
-    this.status = status
   }
 
   setStreamingStatus(status: ChatStatus) {
@@ -535,12 +513,4 @@ export default class ChatSession {
   setShowFullHeight(showFullHeight: boolean) {
     this.showFullHeight = showFullHeight
   }
-
-  addErrorMessageOptimistically(errorMessage: string) {
-    const lastMessage = this.messages.at(-1)
-    if (lastMessage) {
-      lastMessage.uiMessage.metadata = { errorMessage }
-    }
-  }
 }
-

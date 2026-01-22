@@ -34,8 +34,6 @@ class UserMessageActionsModel {
     const uiMessagesToKeep = this.activeChatSession.getUiMessagesWithParts(messagesToKeep)
     this.activeChatSession.setMessages(uiMessagesToKeep)
     this.activeChatSession.chatApi.setMessages(uiMessagesToKeep)
-
-    this.activeChatSession.setShouldRefetchAfterFinish(true)
     this.activeChatSession.chatApi.send(editedMessage)
   }
 
@@ -51,7 +49,6 @@ class UserMessageActionsModel {
     this.activeChatSession.chatApi.setMessages(uiMessagesToKeep)
 
     this.activeChatSession.setModel(selectedModel)
-    this.activeChatSession.setShouldRefetchAfterFinish(true)
     this.activeChatSession.chatApi.send(toJS(this.message.uiMessage) as UIMessage)
   }
 }
