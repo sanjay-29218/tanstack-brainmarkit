@@ -51,7 +51,6 @@ const ChatContainer = function ChatContainer(props: ChatContainerProps) {
     if (!el) return
     const contentEl = el.querySelector('[data-chat-scroll-content]') as HTMLElement | null
     if (!contentEl) return
-
     const observer = new ResizeObserver(() => {
       const next = el.clientHeight + el.scrollTop >= el.scrollHeight
       setIsAtBottom((prev) => (prev === next ? prev : next))
