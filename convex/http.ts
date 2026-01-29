@@ -1,6 +1,5 @@
 import { httpRouter } from 'convex/server'
 import { authComponent, createAuth } from './auth'
-import { stream } from './stream'
 
 const http = httpRouter()
 

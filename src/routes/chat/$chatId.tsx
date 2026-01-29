@@ -6,7 +6,6 @@ export const Route = createFileRoute('/chat/$chatId')({
 })
 
 function ChatRouteComponent() {
-  const { chatId } = Route.useParams()
-  return <ChatPreview key={chatId} />
+  return <ChatPreview />
 }
 

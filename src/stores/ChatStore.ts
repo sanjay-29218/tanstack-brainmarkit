@@ -1,8 +1,8 @@
+import type ChatSession from '@/pages/chat/shared/ChatSession'
 import { action, computed, makeObservable, observable } from 'mobx'
-import ChatSession from '@/pages/chat/shared/ChatSession'
 
 class ChatStore {
-  chatSessions: ChatSession[] = []
+  chatSessions: Array<ChatSession> = []
   activeChatId?: string
 
   constructor() {
@@ -35,7 +35,7 @@ class ChatStore {
     this.activeChatId = undefined
   }
 
-  setChatSessions(chatSessions: ChatSession[]) {
+  setChatSessions(chatSessions: Array<ChatSession>) {
     this.chatSessions = chatSessions
   }
 
@@ -58,7 +58,7 @@ class ChatStore {
     this.chatSessions = []
   }
 
-  syncServerSessions(serverSessions: ChatSession[]) {
+  syncServerSessions(serverSessions: Array<ChatSession>) {
     if (serverSessions.length === 0) return
 
     // Keep existing ChatSession instances so UI-only state isn't reset when we refetch.
@@ -73,7 +73,7 @@ class ChatStore {
       serverIds.add(s.id)
     }
 
-    const merged: ChatSession[] = []
+    const merged: Array<ChatSession> = []
     for (const serverSession of serverSessions) {
       const existing = existingById.get(serverSession.id)
       if (!existing) {

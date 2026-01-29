@@ -459,6 +459,22 @@ const XIAOMI_MIMO_V2_FLASH: RegisteredModel = {
   isFree: true,
 }
 
+const ARCEE_TRINITY_LARGE_PREVIEW: RegisteredModel = {
+  id: 'arcee-ai/trinity-large-preview:free',
+  name: 'Trinity',
+  subtitle: 'Large Preview (free)',
+  provider: 'other',
+  capabilities: {
+    vision: false,
+    reasoning: false,
+    fileUpload: false,
+    imageGen: false,
+  },
+  isPremium: false,
+  isPopular: false,
+  isFree: true,
+}
+
 const GROK_4_1_FAST: RegisteredModel = {
   id: 'x-ai/grok-4.1-fast',
   name: 'Grok',
@@ -699,7 +715,7 @@ const CLAUDE_3_7_SONNET: RegisteredModel = {
   isFree: false,
 }
 
-export const MODEL_REGISTRY: RegisteredModel[] = [
+export const MODEL_REGISTRY: Array<RegisteredModel> = [
   // Popular models
   GEMINI_2_5_FLASH,
   GEMINI_2_5_FLASH_LITE,
@@ -729,6 +745,7 @@ export const MODEL_REGISTRY: RegisteredModel[] = [
   MISTRAL_DEVSTRAL_2_2512,
   OLMO_3_1_32B_THINK,
   XIAOMI_MIMO_V2_FLASH,
+  ARCEE_TRINITY_LARGE_PREVIEW,
   GROK_4_1_FAST,
   GROK_3,
   GROK_4,
